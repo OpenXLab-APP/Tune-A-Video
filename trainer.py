@@ -6,61 +6,52 @@ import pathlib
 import shlex
 import shutil
 import subprocess
+import sys
 
 import gradio as gr
-import PIL.Image
 import slugify
 import torch
 from huggingface_hub import HfApi
+from omegaconf import OmegaConf
 
-from app_upload import LoRAModelUploader
+from app_upload import ModelUploader
 from utils import save_model_card
 
-URL_TO_JOIN_LORA_LIBRARY_ORG = 'https://huggingface.co/organizations/lora-library/share/hjetHAcKjnPHXhHfbeEcqnBqmhgilFfpOL'
+sys.path.append('Tune-A-Video')
 
-
-def pad_image(image: PIL.Image.Image) -> PIL.Image.Image:
-    w, h = image.size
-    if w == h:
-        return image
-    elif w > h:
-        new_image = PIL.Image.new(image.mode, (w, w), (0, 0, 0))
-        new_image.paste(image, (0, (w - h) // 2))
-        return new_image
-    else:
-        new_image = PIL.Image.new(image.mode, (h, h), (0, 0, 0))
-        new_image.paste(image, ((h - w) // 2, 0))
-        return new_image
+URL_TO_JOIN_MODEL_LIBRARY_ORG = 'https://huggingface.co/organizations/Tune-A-Video-library/share/YjTcaNJmKyeHFpMBioHhzBcTzCYddVErEk'
 
 
 class Trainer:
     def __init__(self, hf_token: str | None = None):
         self.hf_token = hf_token
         self.api = HfApi(token=hf_token)
-        self.model_uploader = LoRAModelUploader(hf_token)
+        self.model_uploader = ModelUploader(hf_token)
 
-    def prepare_dataset(self, instance_images: list, resolution: int,
-                        instance_data_dir: pathlib.Path) -> None:
-        shutil.rmtree(instance_data_dir, ignore_errors=True)
-        instance_data_dir.mkdir(parents=True)
-        for i, temp_path in enumerate(instance_images):
-            image = PIL.Image.open(temp_path.name)
-            image = pad_image(image)
-            image = image.resize((resolution, resolution))
-            image = image.convert('RGB')
-            out_path = instance_data_dir / f'{i:03d}.jpg'
-            image.save(out_path, format='JPEG', quality=100)
+        self.checkpoint_dir = pathlib.Path('checkpoints')
+        self.checkpoint_dir.mkdir(exist_ok=True)
 
-    def join_lora_library_org(self) -> None:
+    def download_base_model(self, base_model_id: str) -> str:
+        model_dir = self.checkpoint_dir / base_model_id
+        if not model_dir.exists():
+            org_name = base_model_id.split('/')[0]
+            org_dir = self.checkpoint_dir / org_name
+            org_dir.mkdir(exist_ok=True)
+            subprocess.run(shlex.split(
+                f'git clone https://huggingface.co/{base_model_id}'),
+                           cwd=org_dir)
+        return model_dir.as_posix()
+
+    def join_model_library_org(self) -> None:
         subprocess.run(
             shlex.split(
-                f'curl -X POST -H "Authorization: Bearer {self.hf_token}" -H "Content-Type: application/json" {URL_TO_JOIN_LORA_LIBRARY_ORG}'
+                f'curl -X POST -H "Authorization: Bearer {self.hf_token}" -H "Content-Type: application/json" {URL_TO_JOIN_MODEL_LIBRARY_ORG}'
             ))
 
     def run(
         self,
-        instance_images: list | None,
-        instance_prompt: str,
+        training_video: str,
+        training_prompt: str,
         output_model_name: str,
         overwrite_existing_model: bool,
         validation_prompt: str,
@@ -73,7 +64,6 @@ class Trainer:
         fp16: bool,
         use_8bit_adam: bool,
         checkpointing_steps: int,
-        use_wandb: bool,
         validation_epochs: int,
         upload_to_hub: bool,
         use_private_repo: bool,
@@ -83,10 +73,10 @@ class Trainer:
     ) -> str:
         if not torch.cuda.is_available():
             raise gr.Error('CUDA is not available.')
-        if instance_images is None:
-            raise gr.Error('You need to upload images.')
-        if not instance_prompt:
-            raise gr.Error('The instance prompt is missing.')
+        if training_video is None:
+            raise gr.Error('You need to upload a video.')
+        if not training_prompt:
+            raise gr.Error('The training prompt is missing.')
         if not validation_prompt:
             raise gr.Error('The validation prompt is missing.')
 
@@ -94,7 +84,7 @@ class Trainer:
 
         if not output_model_name:
             timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-            output_model_name = f'lora-dreambooth-{timestamp}'
+            output_model_name = f'tune-a-video-{timestamp}'
         output_model_name = slugify.slugify(output_model_name)
 
         repo_dir = pathlib.Path(__file__).parent
@@ -103,52 +93,52 @@ class Trainer:
             shutil.rmtree(output_dir, ignore_errors=True)
         output_dir.mkdir(parents=True)
 
-        instance_data_dir = repo_dir / 'training_data' / output_model_name
-        self.prepare_dataset(instance_images, resolution, instance_data_dir)
-
         if upload_to_hub:
-            self.join_lora_library_org()
+            self.join_model_library_org()
 
-        command = f'''
-        accelerate launch train_dreambooth_lora.py \
-          --pretrained_model_name_or_path={base_model}  \
-          --instance_data_dir={instance_data_dir} \
-          --output_dir={output_dir} \
-          --instance_prompt="{instance_prompt}" \
-          --resolution={resolution} \
-          --train_batch_size=1 \
-          --gradient_accumulation_steps={gradient_accumulation} \
-          --learning_rate={learning_rate} \
-          --lr_scheduler=constant \
-          --lr_warmup_steps=0 \
-          --max_train_steps={n_steps} \
-          --checkpointing_steps={checkpointing_steps} \
-          --validation_prompt="{validation_prompt}" \
-          --validation_epochs={validation_epochs} \
-          --seed={seed}
-        '''
-        if fp16:
-            command += ' --mixed_precision fp16'
-        if use_8bit_adam:
-            command += ' --use_8bit_adam'
-        if use_wandb:
-            command += ' --report_to wandb'
+        config = OmegaConf.load('Tune-A-Video/configs/man-surfing.yaml')
+        config.pretrained_model_path = self.download_base_model(base_model)
+        config.output_dir = output_dir.as_posix()
+        config.train_data.video_path = training_video.name  # type: ignore
+        config.train_data.prompt = training_prompt
+        config.train_data.n_sample_frames = 8
+        config.train_data.width = resolution
+        config.train_data.height = resolution
+        config.train_data.sample_start_idx = 0
+        config.train_data.sample_frame_rate = 1
+        config.validation_data.prompts = [validation_prompt]
+        config.validation_data.video_length = 8
+        config.validation_data.width = resolution
+        config.validation_data.height = resolution
+        config.validation_data.num_inference_steps = 50
+        config.validation_data.guidance_scale = 7.5
+        config.learning_rate = learning_rate
+        config.gradient_accumulation_steps = gradient_accumulation
+        config.train_batch_size = 1
+        config.max_train_steps = n_steps
+        config.checkpointing_steps = checkpointing_steps
+        config.validation_steps = validation_epochs
+        config.seed = seed
+        config.mixed_precision = 'fp16' if fp16 else ''
+        config.use_8bit_adam = use_8bit_adam
 
-        with open(output_dir / 'train.sh', 'w') as f:
-            command_s = ' '.join(command.split())
-            f.write(command_s)
+        config_path = output_dir / 'config.yaml'
+        with open(config_path, 'w') as f:
+            OmegaConf.save(config, f)
+
+        command = f'accelerate launch Tune-A-Video/train_tuneavideo.py --config {config_path}'
         subprocess.run(shlex.split(command))
         save_model_card(save_dir=output_dir,
                         base_model=base_model,
-                        instance_prompt=instance_prompt,
+                        training_prompt=training_prompt,
                         test_prompt=validation_prompt,
-                        test_image_dir='test_images')
+                        test_image_dir='samples')
 
         message = 'Training completed!'
         print(message)
 
         if upload_to_hub:
-            upload_message = self.model_uploader.upload_lora_model(
+            upload_message = self.model_uploader.upload_model(
                 folder_path=output_dir.as_posix(),
                 repo_name=output_model_name,
                 upload_to=upload_to,

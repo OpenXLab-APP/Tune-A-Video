@@ -6,7 +6,7 @@ import os
 
 import gradio as gr
 
-from constants import UploadTarget
+from constants import MODEL_LIBRARY_ORG_NAME, SAMPLE_MODEL_REPO, UploadTarget
 from inference import InferencePipeline
 from trainer import Trainer
 
@@ -18,12 +18,13 @@ def create_training_demo(trainer: Trainer,
             with gr.Column():
                 with gr.Box():
                     gr.Markdown('Training Data')
-                    instance_images = gr.Files(label='Instance images')
-                    instance_prompt = gr.Textbox(label='Instance prompt',
-                                                 max_lines=1)
+                    training_video = gr.File(label='Training video')
+                    training_prompt = gr.Textbox(
+                        label='Training prompt',
+                        max_lines=1,
+                        placeholder='A man is surfing')
                     gr.Markdown('''
-                        - Upload images of the style you are planning on training on.
-                        - For an instance prompt, use a unique, made up word to avoid collisions.
+                        - Upload a video and write a prompt describing the video.
                         ''')
                 with gr.Box():
                     gr.Markdown('Output Model')
@@ -46,25 +47,26 @@ def create_training_demo(trainer: Trainer,
                     upload_to = gr.Radio(
                         label='Upload to',
                         choices=[_.value for _ in UploadTarget],
-                        value=UploadTarget.LORA_LIBRARY.value)
-                    gr.Markdown('''
-                    - By default, trained models will be uploaded to [LoRA Library](https://huggingface.co/lora-library) (see [this example model](https://huggingface.co/lora-library/lora-dreambooth-sample-dog)).
-                    - You can also choose "Personal Profile", in which case, the model will be uploaded to https://huggingface.co/{your_username}/{model_name}.
+                        value=UploadTarget.MODEL_LIBRARY.value)
+                    gr.Markdown(f'''
+                    - By default, trained models will be uploaded to [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (see [this example model](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}/{SAMPLE_MODEL_REPO})).
+                    - You can also choose "Personal Profile", in which case, the model will be uploaded to https://huggingface.co/{{your_username}}/{{model_name}}.
                     ''')
 
             with gr.Box():
                 gr.Markdown('Training Parameters')
                 with gr.Row():
-                    base_model = gr.Text(
-                        label='Base Model',
-                        value='stabilityai/stable-diffusion-2-1-base',
-                        max_lines=1)
+                    base_model = gr.Text(label='Base Model',
+                                         value='CompVis/stable-diffusion-v1-4',
+                                         max_lines=1)
                     resolution = gr.Dropdown(choices=['512', '768'],
                                              value='512',
-                                             label='Resolution')
+                                             label='Resolution',
+                                             visible=False)
                 num_training_steps = gr.Number(
-                    label='Number of Training Steps', value=1000, precision=0)
-                learning_rate = gr.Number(label='Learning Rate', value=0.0001)
+                    label='Number of Training Steps', value=300, precision=0)
+                learning_rate = gr.Number(label='Learning Rate',
+                                          value=0.000035)
                 gradient_accumulation = gr.Number(
                     label='Number of Gradient Accumulation',
                     value=1,
@@ -75,25 +77,20 @@ def create_training_demo(trainer: Trainer,
                                  step=1,
                                  value=0)
                 fp16 = gr.Checkbox(label='FP16', value=True)
-                use_8bit_adam = gr.Checkbox(label='Use 8bit Adam', value=True)
+                use_8bit_adam = gr.Checkbox(label='Use 8bit Adam', value=False)
                 checkpointing_steps = gr.Number(label='Checkpointing Steps',
-                                                value=100,
+                                                value=1000,
                                                 precision=0)
-                use_wandb = gr.Checkbox(label='Use W&B',
-                                        value=False,
-                                        interactive=bool(
-                                            os.getenv('WANDB_API_KEY')))
                 validation_epochs = gr.Number(label='Validation Epochs',
                                               value=100,
                                               precision=0)
                 gr.Markdown('''
                     - The base model must be a model that is compatible with [diffusers](https://github.com/huggingface/diffusers) library.
                     - It takes a few minutes to download the base model first.
-                    - It will take about 8 minutes to train for 1000 steps with a T4 GPU.
+                    - It will take about 4 minutes to train for 300 steps with an A100 GPU.
+                    - It takes a few minutes to upload your trained model.
                     - You may want to try a small number of steps first, like 1, to see if everything works fine in your environment.
                     - You can check the training status by pressing the "Open logs" button if you are running this on your Space.
-                    - You need to set the environment variable `WANDB_API_KEY` if you'd like to use [W&B](https://wandb.ai/site). See [W&B documentation](https://docs.wandb.ai/guides/track/advanced/environment-variables).
-                    - **Note:** Due to [this issue](https://github.com/huggingface/accelerate/issues/944), currently, training will not terminate properly if you use W&B.
                     ''')
 
         remove_gpu_after_training = gr.Checkbox(
@@ -111,8 +108,8 @@ def create_training_demo(trainer: Trainer,
             run_button.click(fn=pipe.clear)
         run_button.click(fn=trainer.run,
                          inputs=[
-                             instance_images,
-                             instance_prompt,
+                             training_video,
+                             training_prompt,
                              output_model_name,
                              delete_existing_model,
                              validation_prompt,
@@ -125,7 +122,6 @@ def create_training_demo(trainer: Trainer,
                              fp16,
                              use_8bit_adam,
                              checkpointing_steps,
-                             use_wandb,
                              validation_epochs,
                              upload_to_hub,
                              use_private_repo,

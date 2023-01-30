@@ -1,6 +1,5 @@
-training_data/
+checkpoints/
 experiments/
-wandb/
 
 
 # Byte-compiled / optimized / DLL files

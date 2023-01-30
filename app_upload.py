@@ -7,13 +7,13 @@ import pathlib
 import gradio as gr
 import slugify
 
-from constants import UploadTarget
+from constants import MODEL_LIBRARY_ORG_NAME, UploadTarget
 from uploader import Uploader
 from utils import find_exp_dirs
 
 
-class LoRAModelUploader(Uploader):
-    def upload_lora_model(
+class ModelUploader(Uploader):
+    def upload_model(
         self,
         folder_path: str,
         repo_name: str,
@@ -29,8 +29,8 @@ class LoRAModelUploader(Uploader):
 
         if upload_to == UploadTarget.PERSONAL_PROFILE.value:
             organization = ''
-        elif upload_to == UploadTarget.LORA_LIBRARY.value:
-            organization = 'lora-library'
+        elif upload_to == UploadTarget.MODEL_LIBRARY.value:
+            organization = MODEL_LIBRARY_ORG_NAME
         else:
             raise ValueError
 
@@ -41,14 +41,14 @@ class LoRAModelUploader(Uploader):
                            delete_existing_repo=delete_existing_repo)
 
 
-def load_local_lora_model_list() -> dict:
-    choices = find_exp_dirs(ignore_repo=True)
+def load_local_model_list() -> dict:
+    choices = find_exp_dirs()
     return gr.update(choices=choices, value=choices[0] if choices else None)
 
 
 def create_upload_demo(hf_token: str | None) -> gr.Blocks:
-    uploader = LoRAModelUploader(hf_token)
-    model_dirs = find_exp_dirs(ignore_repo=True)
+    uploader = ModelUploader(hf_token)
+    model_dirs = find_exp_dirs()
 
     with gr.Blocks() as demo:
         with gr.Box():
@@ -66,20 +66,20 @@ def create_upload_demo(hf_token: str | None) -> gr.Blocks:
                     label='Delete existing repo of the same name', value=False)
             upload_to = gr.Radio(label='Upload to',
                                  choices=[_.value for _ in UploadTarget],
-                                 value=UploadTarget.LORA_LIBRARY.value)
+                                 value=UploadTarget.MODEL_LIBRARY.value)
             model_name = gr.Textbox(label='Model Name')
         upload_button = gr.Button('Upload')
-        gr.Markdown('''
-            - You can upload your trained model to your personal profile (i.e. https://huggingface.co/{your_username}/{model_name}) or to the public [LoRA Concepts Library](https://huggingface.co/lora-library) (i.e. https://huggingface.co/lora-library/{model_name}).
+        gr.Markdown(f'''
+            - You can upload your trained model to your personal profile (i.e. https://huggingface.co/{{your_username}}/{{model_name}}) or to the public [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (i.e. https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}/{{model_name}}).
             ''')
         with gr.Box():
             gr.Markdown('Output message')
             output_message = gr.Markdown()
 
-        reload_button.click(fn=load_local_lora_model_list,
+        reload_button.click(fn=load_local_model_list,
                             inputs=None,
                             outputs=model_dir)
-        upload_button.click(fn=uploader.upload_lora_model,
+        upload_button.click(fn=uploader.upload_model,
                             inputs=[
                                 model_dir,
                                 model_name,
