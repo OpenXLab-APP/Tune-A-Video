@@ -55,12 +55,15 @@ class InferencePipeline:
         if model_id == self.model_id:
             return
         base_model_id = self.get_base_model_info(model_id, self.hf_token)
-        unet = UNet3DConditionModel.from_pretrained(model_id,
-                                                    subfolder='unet',
-                                                    torch_dtype=torch.float16)
+        unet = UNet3DConditionModel.from_pretrained(
+            model_id,
+            subfolder='unet',
+            torch_dtype=torch.float16,
+            use_auth_token=self.hf_token)
         pipe = TuneAVideoPipeline.from_pretrained(base_model_id,
                                                   unet=unet,
-                                                  torch_dtype=torch.float16)
+                                                  torch_dtype=torch.float16,
+                                                  use_auth_token=self.hf_token)
         pipe = pipe.to(self.device)
         self.pipe = pipe
         self.model_id = model_id  # type: ignore
