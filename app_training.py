@@ -49,7 +49,7 @@ def create_training_demo(trainer: Trainer,
                         choices=[_.value for _ in UploadTarget],
                         value=UploadTarget.MODEL_LIBRARY.value)
                     gr.Markdown(f'''
-                    - By default, trained models will be uploaded to [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (see [this example model](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}/{SAMPLE_MODEL_REPO})).
+                    - By default, trained models will be uploaded to [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (see [this example model](https://huggingface.co/{SAMPLE_MODEL_REPO})).
                     - You can also choose "Personal Profile", in which case, the model will be uploaded to https://huggingface.co/{{your_username}}/{{model_name}}.
                     ''')
 
