@@ -9,6 +9,7 @@ import gradio as gr
 import imageio
 import PIL.Image
 import torch
+from diffusers.utils.import_utils import is_xformers_available
 from einops import rearrange
 from huggingface_hub import ModelCard
 
@@ -65,6 +66,8 @@ class InferencePipeline:
                                                   torch_dtype=torch.float16,
                                                   use_auth_token=self.hf_token)
         pipe = pipe.to(self.device)
+        if is_xformers_available():
+            pipe.unet.enable_xformers_memory_efficient_attention()
         self.pipe = pipe
         self.model_id = model_id  # type: ignore
 
