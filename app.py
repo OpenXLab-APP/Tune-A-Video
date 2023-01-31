@@ -15,7 +15,7 @@ from trainer import Trainer
 
 TITLE = '# [Tune-A-Video](https://tuneavideo.github.io/) Training UI'
 
-ORIGINAL_SPACE_ID = 'hysts/Tune-A-Video-Training-UI'
+ORIGINAL_SPACE_ID = 'Tune-A-Video-library/Tune-A-Video-Training-UI'
 SPACE_ID = os.getenv('SPACE_ID', ORIGINAL_SPACE_ID)
 SHARED_UI_WARNING = f'''# Attention - This Space doesn't work in this shared UI. You can duplicate and use it with a paid private A10G GPU.
 
