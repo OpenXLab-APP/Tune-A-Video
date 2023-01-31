@@ -17,7 +17,7 @@ TITLE = '# [Tune-A-Video](https://tuneavideo.github.io/) Training UI'
 
 ORIGINAL_SPACE_ID = 'hysts/Tune-A-Video-Training-UI'
 SPACE_ID = os.getenv('SPACE_ID', ORIGINAL_SPACE_ID)
-SHARED_UI_WARNING = f'''# Attention - This Space doesn't work in this shared UI. You can duplicate and use it with a paid private A100 GPU.
+SHARED_UI_WARNING = f'''# Attention - This Space doesn't work in this shared UI. You can duplicate and use it with a paid private A10G GPU.
 
 <center><a class="duplicate-button" style="display:inline-block" target="_blank" href="https://huggingface.co/spaces/{SPACE_ID}?duplicate=true"><img src="https://img.shields.io/badge/-Duplicate%20Space-blue?labelColor=white&style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAP5JREFUOE+lk7FqAkEURY+ltunEgFXS2sZGIbXfEPdLlnxJyDdYB62sbbUKpLbVNhyYFzbrrA74YJlh9r079973psed0cvUD4A+4HoCjsA85X0Dfn/RBLBgBDxnQPfAEJgBY+A9gALA4tcbamSzS4xq4FOQAJgCDwV2CPKV8tZAJcAjMMkUe1vX+U+SMhfAJEHasQIWmXNN3abzDwHUrgcRGmYcgKe0bxrblHEB4E/pndMazNpSZGcsZdBlYJcEL9Afo75molJyM2FxmPgmgPqlWNLGfwZGG6UiyEvLzHYDmoPkDDiNm9JR9uboiONcBXrpY1qmgs21x1QwyZcpvxt9NS09PlsPAAAAAElFTkSuQmCC&logoWidth=14" alt="Duplicate Space"></a></center>
 '''
@@ -29,7 +29,7 @@ else:
 CUDA_NOT_AVAILABLE_WARNING = f'''# Attention - Running on CPU.
 <center>
 You can assign a GPU in the {SETTINGS} tab if you are running this on HF Spaces.
-"A100 large" is required to run this demo.
+You can use "A10G small/large" to run this demo.
 </center>
 '''
 
