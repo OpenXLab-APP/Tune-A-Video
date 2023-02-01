@@ -122,7 +122,7 @@ def create_inference_demo(pipe: InferencePipeline,
                 gr.Markdown('''
                 - After training, you can press "Reload Model List" button to load your trained model names.
                 - It takes a few minutes to download model first.
-                - Expected time to generate an 8-frame video: 24 seconds with A10G, 70 seconds with T4, (10 seconds with A100)
+                - Expected time to generate an 8-frame video: 70 seconds with T4, 24 seconds with A10G, (10 seconds with A100)
                 ''')
             with gr.Column():
                 result = gr.Video(label='Result')

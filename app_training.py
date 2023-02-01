@@ -87,7 +87,7 @@ def create_training_demo(trainer: Trainer,
                 gr.Markdown('''
                     - The base model must be a model that is compatible with [diffusers](https://github.com/huggingface/diffusers) library.
                     - It takes a few minutes to download the base model first.
-                    - Expected time to train a model for 300 steps: 8 minutes with A10G, 20 minutes with T4, (4 minutes with A100)
+                    - Expected time to train a model for 300 steps: 20 minutes with T4, 8 minutes with A10G, (4 minutes with A100)
                     - It takes a few minutes to upload your trained model.
                     - You may want to try a small number of steps first, like 1, to see if everything works fine in your environment.
                     - You can check the training status by pressing the "Open logs" button if you are running this on your Space.
