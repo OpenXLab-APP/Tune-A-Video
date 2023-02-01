@@ -44,8 +44,6 @@ RUN pyenv install ${PYTHON_VERSION} && \
 RUN pip install --no-cache-dir -U torch==1.13.1 torchvision==0.14.1
 COPY --chown=1000 requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -U -r /tmp/requirements.txt
-COPY --chown=1000 wheel/xformers-0.0.16+bc08bbc.d20230130-cp310-cp310-linux_x86_64.whl /tmp/xformers-0.0.16+bc08bbc.d20230130-cp310-cp310-linux_x86_64.whl
-RUN pip install --no-cache-dir -U /tmp/xformers-0.0.16+bc08bbc.d20230130-cp310-cp310-linux_x86_64.whl
 
 COPY --chown=1000 . ${HOME}/app
 RUN cd Tune-A-Video && patch -p1 < ../patch
