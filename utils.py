@@ -29,7 +29,10 @@ def save_model_card(
         if image_paths:
             image_path = image_paths[-1]
             rel_path = image_path.relative_to(save_dir)
-            image_str = f'Test prompt: {test_prompt}\n' + f'![{image_path.stem}]({rel_path})\n'
+            image_str = f'''## Samples
+Test prompt: {test_prompt}
+
+![{image_path.stem}]({rel_path})'''
 
     model_card = f'''---
 license: creativeml-openrail-m
@@ -47,11 +50,15 @@ inference: false
 
 # Tune-A-Video - {save_dir.name}
 
-Base model: [{base_model}](https://huggingface.co/{base_model}).
-
-Training prompt: {training_prompt}
+## Model description
+- Base model: [{base_model}](https://huggingface.co/{base_model})
+- Training prompt: {training_prompt}
 
 {image_str}
+
+## Related papers:
+- [Tune-A-Video](https://arxiv.org/abs/2212.11565): One-Shot Tuning of Image Diffusion Models for Text-to-Video Generation
+- [Stable-Diffusion](https://arxiv.org/abs/2112.10752): High-Resolution Image Synthesis with Latent Diffusion Models
 '''
 
     with open(save_dir / 'README.md', 'w') as f:
