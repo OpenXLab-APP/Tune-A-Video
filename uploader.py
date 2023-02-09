@@ -15,23 +15,23 @@ class Uploader:
                private: bool = True,
                delete_existing_repo: bool = False,
                input_token: str | None = None) -> str:
-        
+
         api = HfApi(token=self.hf_token if self.hf_token else input_token)
-        
+
         if not folder_path:
             raise ValueError
         if not repo_name:
             raise ValueError
         if not organization:
             organization = api.whoami()['name']
-        
+
         repo_id = f'{organization}/{repo_name}'
         if delete_existing_repo:
             try:
-                self.api.delete_repo(repo_id, repo_type=repo_type)
+                api.delete_repo(repo_id, repo_type=repo_type)
             except Exception:
                 pass
-        try:                
+        try:
             api.create_repo(repo_id, repo_type=repo_type, private=private)
             api.upload_folder(repo_id=repo_id,
                               folder_path=folder_path,

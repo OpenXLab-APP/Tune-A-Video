@@ -23,6 +23,7 @@ URL_TO_JOIN_MODEL_LIBRARY_ORG = 'https://huggingface.co/organizations/Tune-A-Vid
 ORIGINAL_SPACE_ID = 'Tune-A-Video-library/Tune-A-Video-Training-UI'
 SPACE_ID = os.getenv('SPACE_ID', ORIGINAL_SPACE_ID)
 
+
 class Trainer:
     def __init__(self, hf_token: str | None = None):
         self.hf_token = hf_token
@@ -73,7 +74,9 @@ class Trainer:
         input_token: str,
     ) -> str:
         if SPACE_ID == ORIGINAL_SPACE_ID:
-            raise gr.Error('This Space does not work on this Shared UI. Duplicate the Space and attribute a GPU')
+            raise gr.Error(
+                'This Space does not work on this Shared UI. Duplicate the Space and attribute a GPU'
+            )
         if not torch.cuda.is_available():
             raise gr.Error('CUDA is not available.')
         if training_video is None:
@@ -97,7 +100,8 @@ class Trainer:
         output_dir.mkdir(parents=True)
 
         if upload_to_hub:
-            self.join_model_library_org(self.hf_token if self.hf_token else input_token)
+            self.join_model_library_org(
+                self.hf_token if self.hf_token else input_token)
 
         config = OmegaConf.load('Tune-A-Video/configs/man-surfing.yaml')
         config.pretrained_model_path = self.download_base_model(base_model)
@@ -154,7 +158,8 @@ class Trainer:
         if remove_gpu_after_training:
             space_id = os.getenv('SPACE_ID')
             if space_id:
-                api = HfApi(token=self.hf_token if self.hf_token else input_token)
+                api = HfApi(
+                    token=self.hf_token if self.hf_token else input_token)
                 api.request_space_hardware(repo_id=space_id,
                                            hardware='cpu-basic')
 

@@ -38,7 +38,7 @@ You can use "T4 small/medium" to run this demo.
 </center>
 '''
 
-HF_TOKEN_NOT_SPECIFIED_WARNING = f'''The environment variable `HF_TOKEN` is not specified. Feel free to specify your Hugging Face token with write permission if you don't want to manually provide it for every run. 
+HF_TOKEN_NOT_SPECIFIED_WARNING = f'''The environment variable `HF_TOKEN` is not specified. Feel free to specify your Hugging Face token with write permission if you don't want to manually provide it for every run.
 <center>
 You can check and create your Hugging Face tokens <a href="https://huggingface.co/settings/tokens" target="_blank">here</a>.
 You can specify environment variables in the "Repository secrets" section of the {SETTINGS} tab.
@@ -63,9 +63,8 @@ with gr.Blocks(css='style.css') as demo:
         show_warning(SHARED_UI_WARNING)
     elif not torch.cuda.is_available():
         show_warning(CUDA_NOT_AVAILABLE_WARNING)
-    elif(not "T4" in GPU_DATA):
+    elif (not 'T4' in GPU_DATA):
         show_warning(INVALID_GPU_WARNING)
-    
 
     gr.Markdown(TITLE)
     with gr.Tabs():
@@ -78,7 +77,7 @@ with gr.Blocks(css='style.css') as demo:
             - You can use this tab to upload models later if you choose not to upload models in training time or if upload in training time failed.
             ''')
             create_upload_demo(HF_TOKEN)
-    
+
     if not HF_TOKEN:
         show_warning(HF_TOKEN_NOT_SPECIFIED_WARNING)
 
