@@ -20,12 +20,12 @@ from utils import save_model_card
 sys.path.append('Tune-A-Video')
 
 URL_TO_JOIN_MODEL_LIBRARY_ORG = 'https://huggingface.co/organizations/Tune-A-Video-library/share/YjTcaNJmKyeHFpMBioHhzBcTzCYddVErEk'
-
+ORIGINAL_SPACE_ID = 'Tune-A-Video-library/Tune-A-Video-Training-UI'
+SPACE_ID = os.getenv('SPACE_ID', ORIGINAL_SPACE_ID)
 
 class Trainer:
     def __init__(self, hf_token: str | None = None):
         self.hf_token = hf_token
-        self.api = HfApi(token=hf_token)
         self.model_uploader = ModelUploader(hf_token)
 
         self.checkpoint_dir = pathlib.Path('checkpoints')
@@ -42,10 +42,10 @@ class Trainer:
                            cwd=org_dir)
         return model_dir.as_posix()
 
-    def join_model_library_org(self) -> None:
+    def join_model_library_org(self, token: str) -> None:
         subprocess.run(
             shlex.split(
-                f'curl -X POST -H "Authorization: Bearer {self.hf_token}" -H "Content-Type: application/json" {URL_TO_JOIN_MODEL_LIBRARY_ORG}'
+                f'curl -X POST -H "Authorization: Bearer {token}" -H "Content-Type: application/json" {URL_TO_JOIN_MODEL_LIBRARY_ORG}'
             ))
 
     def run(
@@ -70,7 +70,10 @@ class Trainer:
         delete_existing_repo: bool,
         upload_to: str,
         remove_gpu_after_training: bool,
+        input_token: str,
     ) -> str:
+        if SPACE_ID == ORIGINAL_SPACE_ID:
+            raise gr.Error('This Space does not work on this Shared UI. Duplicate the Space and attribute a GPU')
         if not torch.cuda.is_available():
             raise gr.Error('CUDA is not available.')
         if training_video is None:
@@ -94,7 +97,7 @@ class Trainer:
         output_dir.mkdir(parents=True)
 
         if upload_to_hub:
-            self.join_model_library_org()
+            self.join_model_library_org(self.hf_token if self.hf_token else input_token)
 
         config = OmegaConf.load('Tune-A-Video/configs/man-surfing.yaml')
         config.pretrained_model_path = self.download_base_model(base_model)
@@ -143,14 +146,16 @@ class Trainer:
                 repo_name=output_model_name,
                 upload_to=upload_to,
                 private=use_private_repo,
-                delete_existing_repo=delete_existing_repo)
+                delete_existing_repo=delete_existing_repo,
+                input_token=input_token)
             print(upload_message)
             message = message + '\n' + upload_message
 
         if remove_gpu_after_training:
             space_id = os.getenv('SPACE_ID')
             if space_id:
-                self.api.request_space_hardware(repo_id=space_id,
-                                                hardware='cpu-basic')
+                api = HfApi(token=self.hf_token if self.hf_token else input_token)
+                api.request_space_hardware(repo_id=space_id,
+                                           hardware='cpu-basic')
 
         return message

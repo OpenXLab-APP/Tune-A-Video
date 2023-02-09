@@ -20,6 +20,7 @@ class ModelUploader(Uploader):
         upload_to: str,
         private: bool,
         delete_existing_repo: bool,
+        input_token: str | None = None,
     ) -> str:
         if not folder_path:
             raise ValueError
@@ -38,7 +39,8 @@ class ModelUploader(Uploader):
                            repo_name,
                            organization=organization,
                            private=private,
-                           delete_existing_repo=delete_existing_repo)
+                           delete_existing_repo=delete_existing_repo,
+                           input_token=input_token)
 
 
 def load_local_model_list() -> dict:
@@ -68,6 +70,7 @@ def create_upload_demo(hf_token: str | None) -> gr.Blocks:
                                  choices=[_.value for _ in UploadTarget],
                                  value=UploadTarget.MODEL_LIBRARY.value)
             model_name = gr.Textbox(label='Model Name')
+            input_token = gr.Text(label="Hugging Face Write Token", placeholder="", visible=False if hf_token else True)
         upload_button = gr.Button('Upload')
         gr.Markdown(f'''
             - You can upload your trained model to your personal profile (i.e. https://huggingface.co/{{your_username}}/{{model_name}}) or to the public [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (i.e. https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}/{{model_name}}).
@@ -86,6 +89,7 @@ def create_upload_demo(hf_token: str | None) -> gr.Blocks:
                                 upload_to,
                                 use_private_repo,
                                 delete_existing_repo,
+                                input_token,
                             ],
                             outputs=output_message)
 
