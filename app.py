@@ -24,6 +24,7 @@ SHARED_UI_WARNING = f'''## Attention - Training doesn't work in this shared UI. 
 <center><a class="duplicate-button" style="display:inline-block" target="_blank" href="https://huggingface.co/spaces/{SPACE_ID}?duplicate=true"><img style="margin-top:0;margin-bottom:0" src="https://img.shields.io/badge/-Duplicate%20Space-blue?labelColor=white&style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAP5JREFUOE+lk7FqAkEURY+ltunEgFXS2sZGIbXfEPdLlnxJyDdYB62sbbUKpLbVNhyYFzbrrA74YJlh9r079973psed0cvUD4A+4HoCjsA85X0Dfn/RBLBgBDxnQPfAEJgBY+A9gALA4tcbamSzS4xq4FOQAJgCDwV2CPKV8tZAJcAjMMkUe1vX+U+SMhfAJEHasQIWmXNN3abzDwHUrgcRGmYcgKe0bxrblHEB4E/pndMazNpSZGcsZdBlYJcEL9Afo75molJyM2FxmPgmgPqlWNLGfwZGG6UiyEvLzHYDmoPkDDiNm9JR9uboiONcBXrpY1qmgs21x1QwyZcpvxt9NS09PlsPAAAAAElFTkSuQmCC&logoWidth=14" alt="Duplicate Space"></a></center>
 '''
 
+IS_SHARED_UI = SPACE_ID == ORIGINAL_SPACE_ID
 if os.getenv('SYSTEM') == 'spaces' and SPACE_ID != ORIGINAL_SPACE_ID:
     SETTINGS = f'<a href="https://huggingface.co/spaces/{SPACE_ID}/settings">Settings</a>'
 else:
@@ -57,7 +58,7 @@ pipe = InferencePipeline(HF_TOKEN)
 trainer = Trainer(HF_TOKEN)
 
 with gr.Blocks(css='style.css') as demo:
-    if SPACE_ID == ORIGINAL_SPACE_ID:
+    if IS_SHARED_UI:
         show_warning(SHARED_UI_WARNING)
     elif not torch.cuda.is_available():
         show_warning(CUDA_NOT_AVAILABLE_WARNING)
@@ -67,7 +68,7 @@ with gr.Blocks(css='style.css') as demo:
     gr.Markdown(TITLE)
     with gr.Tabs():
         with gr.TabItem('Train'):
-            create_training_demo(trainer, pipe)
+            create_training_demo(trainer, pipe, disable_training=IS_SHARED_UI)
         with gr.TabItem('Run'):
             create_inference_demo(pipe, HF_TOKEN)
         with gr.TabItem('Upload'):

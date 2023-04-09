@@ -13,7 +13,8 @@ from trainer import Trainer
 
 
 def create_training_demo(trainer: Trainer,
-                         pipe: InferencePipeline | None = None) -> gr.Blocks:
+                         pipe: InferencePipeline | None = None,
+                         disable_training: bool = False) -> gr.Blocks:
     def read_log() -> str:
         with open(trainer.log_file) as f:
             lines = f.readlines()
@@ -111,7 +112,8 @@ def create_training_demo(trainer: Trainer,
             value=False,
             interactive=bool(os.getenv('SPACE_ID')),
             visible=False)
-        run_button = gr.Button('Start Training')
+        run_button = gr.Button('Start Training',
+                               interactive=not disable_training)
 
         with gr.Box():
             gr.Text(label='Log',
@@ -119,7 +121,8 @@ def create_training_demo(trainer: Trainer,
                     lines=10,
                     max_lines=10,
                     every=1)
-            if not os.getenv('DISABLE_SYSTEM_MONITOR'):
+            if not disable_training and not os.getenv(
+                    'DISABLE_SYSTEM_MONITOR'):
                 with gr.Accordion(label='System info', open=False):
                     create_monitor_demo()
 

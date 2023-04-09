@@ -20,8 +20,6 @@ from utils import save_model_card
 sys.path.append('Tune-A-Video')
 
 URL_TO_JOIN_MODEL_LIBRARY_ORG = 'https://huggingface.co/organizations/Tune-A-Video-library/share/YjTcaNJmKyeHFpMBioHhzBcTzCYddVErEk'
-ORIGINAL_SPACE_ID = 'Tune-A-Video-library/Tune-A-Video-Training-UI'
-SPACE_ID = os.getenv('SPACE_ID')
 
 
 class Trainer:
@@ -76,10 +74,6 @@ class Trainer:
         remove_gpu_after_training: bool,
         input_token: str,
     ) -> None:
-        if SPACE_ID == ORIGINAL_SPACE_ID:
-            raise gr.Error(
-                'This Space does not work on this Shared UI. Duplicate the Space and attribute a GPU'
-            )
         if not torch.cuda.is_available():
             raise gr.Error('CUDA is not available.')
         if training_video is None:
