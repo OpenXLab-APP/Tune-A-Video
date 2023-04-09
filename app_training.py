@@ -48,9 +48,9 @@ def create_training_demo(trainer: Trainer,
                                                  label='Resolution',
                                                  visible=False)
 
-                    input_token = gr.Text(label='Hugging Face Write Token',
-                                          placeholder='',
-                                          visible=False if hf_token else True)
+                    input_hf_token = gr.Text(label='Hugging Face Write Token',
+                                             placeholder='',
+                                             visible=hf_token is None)
                     with gr.Accordion('Advanced settings', open=False):
                         num_training_steps = gr.Number(
                             label='Number of Training Steps',
@@ -150,7 +150,7 @@ def create_training_demo(trainer: Trainer,
                              delete_existing_repo,
                              upload_to,
                              remove_gpu_after_training,
-                             input_token,
+                             input_hf_token,
                          ])
     return demo
 

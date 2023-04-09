@@ -72,7 +72,7 @@ class Trainer:
         delete_existing_repo: bool,
         upload_to: str,
         remove_gpu_after_training: bool,
-        input_token: str,
+        input_hf_token: str,
     ) -> None:
         if not torch.cuda.is_available():
             raise gr.Error('CUDA is not available.')
@@ -98,7 +98,7 @@ class Trainer:
 
         if upload_to_hub:
             self.join_model_library_org(
-                self.hf_token if self.hf_token else input_token)
+                self.hf_token if self.hf_token else input_hf_token)
 
         config = OmegaConf.load('Tune-A-Video/configs/man-surfing.yaml')
         config.pretrained_model_path = self.download_base_model(base_model)
@@ -152,14 +152,13 @@ class Trainer:
                 upload_to=upload_to,
                 private=use_private_repo,
                 delete_existing_repo=delete_existing_repo,
-                input_token=input_token)
+                input_hf_token=input_hf_token)
             with open(self.log_file, 'a') as f:
                 f.write(upload_message)
 
         if remove_gpu_after_training:
             space_id = os.getenv('SPACE_ID')
             if space_id:
-                api = HfApi(
-                    token=self.hf_token if self.hf_token else input_token)
+                api = HfApi(token=self.hf_token or input_hf_token)
                 api.request_space_hardware(repo_id=space_id,
                                            hardware='cpu-basic')

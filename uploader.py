@@ -14,9 +14,9 @@ class Uploader:
                repo_type: str = 'model',
                private: bool = True,
                delete_existing_repo: bool = False,
-               input_token: str | None = None) -> str:
+               input_hf_token: str | None = None) -> str:
 
-        api = HfApi(token=self.hf_token if self.hf_token else input_token)
+        api = HfApi(token=self.hf_token or input_hf_token)
 
         if not folder_path:
             raise ValueError
