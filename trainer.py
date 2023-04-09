@@ -14,19 +14,14 @@ import torch
 from huggingface_hub import HfApi
 from omegaconf import OmegaConf
 
-from app_upload import ModelUploader
+from uploader import upload
 from utils import save_model_card
 
 sys.path.append('Tune-A-Video')
 
-URL_TO_JOIN_MODEL_LIBRARY_ORG = 'https://huggingface.co/organizations/Tune-A-Video-library/share/YjTcaNJmKyeHFpMBioHhzBcTzCYddVErEk'
-
 
 class Trainer:
-    def __init__(self, hf_token: str | None = None):
-        self.hf_token = hf_token
-        self.model_uploader = ModelUploader(hf_token)
-
+    def __init__(self):
         self.checkpoint_dir = pathlib.Path('checkpoints')
         self.checkpoint_dir.mkdir(exist_ok=True)
 
@@ -43,12 +38,6 @@ class Trainer:
                 f'git clone https://huggingface.co/{base_model_id}'),
                            cwd=org_dir)
         return model_dir.as_posix()
-
-    def join_model_library_org(self, token: str) -> None:
-        subprocess.run(
-            shlex.split(
-                f'curl -X POST -H "Authorization: Bearer {token}" -H "Content-Type: application/json" {URL_TO_JOIN_MODEL_LIBRARY_ORG}'
-            ))
 
     def run(
         self,
@@ -72,7 +61,7 @@ class Trainer:
         delete_existing_repo: bool,
         upload_to: str,
         remove_gpu_after_training: bool,
-        input_hf_token: str,
+        hf_token: str,
     ) -> None:
         if not torch.cuda.is_available():
             raise gr.Error('CUDA is not available.')
@@ -95,10 +84,6 @@ class Trainer:
         if overwrite_existing_model or upload_to_hub:
             shutil.rmtree(output_dir, ignore_errors=True)
         output_dir.mkdir(parents=True)
-
-        if upload_to_hub:
-            self.join_model_library_org(
-                self.hf_token if self.hf_token else input_hf_token)
 
         config = OmegaConf.load('Tune-A-Video/configs/man-surfing.yaml')
         config.pretrained_model_path = self.download_base_model(base_model)
@@ -146,20 +131,18 @@ class Trainer:
             f.write('Training completed!\n')
 
         if upload_to_hub:
-            upload_message = self.model_uploader.upload_model(
-                folder_path=output_dir.as_posix(),
-                repo_name=output_model_name,
-                upload_to=upload_to,
-                private=use_private_repo,
-                delete_existing_repo=delete_existing_repo,
-                input_hf_token=input_hf_token,
-                return_html_link=False)
+            upload_message = upload(local_folder_path=output_dir.as_posix(),
+                                    target_repo_name=output_model_name,
+                                    upload_to=upload_to,
+                                    private=use_private_repo,
+                                    delete_existing_repo=delete_existing_repo,
+                                    hf_token=hf_token)
             with open(self.log_file, 'a') as f:
                 f.write(upload_message)
 
         if remove_gpu_after_training:
             space_id = os.getenv('SPACE_ID')
             if space_id:
-                api = HfApi(token=self.hf_token or input_hf_token)
+                api = HfApi(token=os.getenv('HF_TOKEN') or hf_token)
                 api.request_space_hardware(repo_id=space_id,
                                            hardware='cpu-basic')

@@ -20,7 +20,6 @@ def create_training_demo(trainer: Trainer,
             lines = f.readlines()
         return ''.join(lines[-10:])
 
-    hf_token = os.getenv('HF_TOKEN')
     with gr.Blocks() as demo:
         with gr.Row():
             with gr.Column():
@@ -48,9 +47,9 @@ def create_training_demo(trainer: Trainer,
                                                  label='Resolution',
                                                  visible=False)
 
-                    input_hf_token = gr.Text(label='Hugging Face Write Token',
-                                             placeholder='',
-                                             visible=hf_token is None)
+                    hf_token = gr.Text(label='Hugging Face Write Token',
+                                       placeholder='',
+                                       visible=os.getenv('HF_TOKEN') is None)
                     with gr.Accordion('Advanced settings', open=False):
                         num_training_steps = gr.Number(
                             label='Number of Training Steps',
@@ -150,13 +149,12 @@ def create_training_demo(trainer: Trainer,
                              delete_existing_repo,
                              upload_to,
                              remove_gpu_after_training,
-                             input_hf_token,
+                             hf_token,
                          ])
     return demo
 
 
 if __name__ == '__main__':
-    hf_token = os.getenv('HF_TOKEN')
-    trainer = Trainer(hf_token)
+    trainer = Trainer()
     demo = create_training_demo(trainer)
     demo.queue(api_open=False, max_size=1).launch()

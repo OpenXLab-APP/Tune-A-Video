@@ -1,47 +1,63 @@
 from __future__ import annotations
 
+import os
+import pathlib
+import shlex
+import subprocess
+
+import slugify
 from huggingface_hub import HfApi
 
+from constants import (MODEL_LIBRARY_ORG_NAME, URL_TO_JOIN_MODEL_LIBRARY_ORG,
+                       UploadTarget)
 
-class Uploader:
-    def __init__(self, hf_token: str | None):
-        self.hf_token = hf_token
 
-    def upload(self,
-               folder_path: str,
-               repo_name: str,
-               organization: str = '',
-               repo_type: str = 'model',
-               private: bool = True,
-               delete_existing_repo: bool = False,
-               input_hf_token: str | None = None,
-               return_html_link: bool = True) -> str:
+def join_model_library_org(hf_token: str) -> None:
+    subprocess.run(
+        shlex.split(
+            f'curl -X POST -H "Authorization: Bearer {hf_token}" -H "Content-Type: application/json" {URL_TO_JOIN_MODEL_LIBRARY_ORG}'
+        ))
 
-        api = HfApi(token=self.hf_token or input_hf_token)
 
-        if not folder_path:
-            raise ValueError
-        if not repo_name:
-            raise ValueError
-        if not organization:
-            organization = api.whoami()['name']
+def upload(local_folder_path: str,
+           target_repo_name: str,
+           upload_to: str,
+           private: bool = True,
+           delete_existing_repo: bool = False,
+           hf_token: str = '') -> str:
+    hf_token = os.getenv('HF_TOKEN') or hf_token
+    if not hf_token:
+        raise ValueError
+    api = HfApi(token=hf_token)
 
-        repo_id = f'{organization}/{repo_name}'
-        if delete_existing_repo:
-            try:
-                api.delete_repo(repo_id, repo_type=repo_type)
-            except Exception:
-                pass
+    if not local_folder_path:
+        raise ValueError
+    if not target_repo_name:
+        target_repo_name = pathlib.Path(local_folder_path).name
+    target_repo_name = slugify.slugify(target_repo_name)
+
+    if upload_to == UploadTarget.PERSONAL_PROFILE.value:
+        organization = api.whoami()['name']
+    elif upload_to == UploadTarget.MODEL_LIBRARY.value:
+        organization = MODEL_LIBRARY_ORG_NAME
+        join_model_library_org(hf_token)
+    else:
+        raise ValueError
+
+    repo_id = f'{organization}/{target_repo_name}'
+    if delete_existing_repo:
         try:
-            api.create_repo(repo_id, repo_type=repo_type, private=private)
-            api.upload_folder(repo_id=repo_id,
-                              folder_path=folder_path,
-                              path_in_repo='.',
-                              repo_type=repo_type)
-            url = f'https://huggingface.co/{repo_id}'
-            if return_html_link:
-                url = f'<a href="{url}" target="_blank">{url}</a>'
-            message = f'Your model was successfully uploaded to {url}.'
-        except Exception as e:
-            message = str(e)
-        return message
+            api.delete_repo(repo_id, repo_type='model')
+        except Exception:
+            pass
+    try:
+        api.create_repo(repo_id, repo_type='model', private=private)
+        api.upload_folder(repo_id=repo_id,
+                          folder_path=local_folder_path,
+                          path_in_repo='.',
+                          repo_type='model')
+        url = f'https://huggingface.co/{repo_id}'
+        message = f'Your model was successfully uploaded to {url}.'
+    except Exception as e:
+        message = str(e)
+    return message

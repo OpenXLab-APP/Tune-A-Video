@@ -55,7 +55,7 @@ def show_warning(warning_text: str) -> gr.Blocks:
 
 
 pipe = InferencePipeline(HF_TOKEN)
-trainer = Trainer(HF_TOKEN)
+trainer = Trainer()
 
 with gr.Blocks(css='style.css') as demo:
     if IS_SHARED_UI:
@@ -75,7 +75,7 @@ with gr.Blocks(css='style.css') as demo:
             gr.Markdown('''
             - You can use this tab to upload models later if you choose not to upload models in training time or if upload in training time failed.
             ''')
-            create_upload_demo(HF_TOKEN)
+            create_upload_demo()
 
     if not HF_TOKEN:
         show_warning(HF_TOKEN_NOT_SPECIFIED_WARNING)
