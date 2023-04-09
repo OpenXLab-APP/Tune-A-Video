@@ -62,7 +62,8 @@ class InferenceUtil:
 
 
 def create_inference_demo(pipe: InferencePipeline,
-                          hf_token: str | None = None) -> gr.Blocks:
+                          hf_token: str | None = None,
+                          disable_run_button: bool = False) -> gr.Blocks:
     app = InferenceUtil(hf_token)
 
     with gr.Blocks() as demo:
@@ -117,7 +118,8 @@ def create_inference_demo(pipe: InferencePipeline,
                                                step=0.1,
                                                value=7.5)
 
-                run_button = gr.Button('Generate')
+                run_button = gr.Button('Generate',
+                                       interactive=not disable_run_button)
 
                 gr.Markdown('''
                 - After training, you can press "Reload Model List" button to load your trained model names.

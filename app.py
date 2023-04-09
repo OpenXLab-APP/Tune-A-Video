@@ -9,6 +9,7 @@ import gradio as gr
 import torch
 
 from app_inference import create_inference_demo
+from app_system_monitor import create_monitor_demo
 from app_training import create_training_demo
 from app_upload import create_upload_demo
 from inference import InferencePipeline
@@ -68,14 +69,23 @@ with gr.Blocks(css='style.css') as demo:
     gr.Markdown(TITLE)
     with gr.Tabs():
         with gr.TabItem('Train'):
-            create_training_demo(trainer, pipe, disable_training=IS_SHARED_UI)
+            create_training_demo(trainer,
+                                 pipe,
+                                 disable_run_button=IS_SHARED_UI)
         with gr.TabItem('Run'):
-            create_inference_demo(pipe, HF_TOKEN)
+            create_inference_demo(pipe,
+                                  HF_TOKEN,
+                                  disable_run_button=IS_SHARED_UI)
         with gr.TabItem('Upload'):
             gr.Markdown('''
             - You can use this tab to upload models later if you choose not to upload models in training time or if upload in training time failed.
             ''')
-            create_upload_demo()
+            create_upload_demo(disable_run_button=IS_SHARED_UI)
+
+    with gr.Row():
+        if not IS_SHARED_UI and not os.getenv('DISABLE_SYSTEM_MONITOR'):
+            with gr.Accordion(label='System info', open=False):
+                create_monitor_demo()
 
     if not HF_TOKEN:
         show_warning(HF_TOKEN_NOT_SPECIFIED_WARNING)

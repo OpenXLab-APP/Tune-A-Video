@@ -6,7 +6,6 @@ import os
 
 import gradio as gr
 
-from app_system_monitor import create_monitor_demo
 from constants import UploadTarget
 from inference import InferencePipeline
 from trainer import Trainer
@@ -14,7 +13,7 @@ from trainer import Trainer
 
 def create_training_demo(trainer: Trainer,
                          pipe: InferencePipeline | None = None,
-                         disable_training: bool = False) -> gr.Blocks:
+                         disable_run_button: bool = False) -> gr.Blocks:
     def read_log() -> str:
         with open(trainer.log_file) as f:
             lines = f.readlines()
@@ -112,7 +111,7 @@ def create_training_demo(trainer: Trainer,
             interactive=bool(os.getenv('SPACE_ID')),
             visible=False)
         run_button = gr.Button('Start Training',
-                               interactive=not disable_training)
+                               interactive=not disable_run_button)
 
         with gr.Box():
             gr.Text(label='Log',
@@ -120,10 +119,6 @@ def create_training_demo(trainer: Trainer,
                     lines=10,
                     max_lines=10,
                     every=1)
-            if not disable_training and not os.getenv(
-                    'DISABLE_SYSTEM_MONITOR'):
-                with gr.Accordion(label='System info', open=False):
-                    create_monitor_demo()
 
         if pipe is not None:
             run_button.click(fn=pipe.clear)
