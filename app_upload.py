@@ -38,6 +38,7 @@ def create_upload_demo(disable_run_button: bool = False) -> gr.Blocks:
                                  value=UploadTarget.MODEL_LIBRARY.value)
             model_name = gr.Textbox(label='Model Name')
             hf_token = gr.Text(label='Hugging Face Write Token',
+                               type='password',
                                visible=os.getenv('HF_TOKEN') is None)
         upload_button = gr.Button('Upload', interactive=not disable_run_button)
         gr.Markdown(f'''

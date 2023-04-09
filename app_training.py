@@ -47,6 +47,7 @@ def create_training_demo(trainer: Trainer,
                                                  visible=False)
 
                     hf_token = gr.Text(label='Hugging Face Write Token',
+                                       type='password',
                                        visible=os.getenv('HF_TOKEN') is None)
                     with gr.Accordion('Advanced settings', open=False):
                         num_training_steps = gr.Number(
