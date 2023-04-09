@@ -113,18 +113,31 @@ def create_training_demo(trainer: Trainer,
 
         if pipe is not None:
             run_button.click(fn=pipe.clear)
-        run_button.click(
-            fn=trainer.run,
-            inputs=[
-                training_video, training_prompt, output_model_name,
-                delete_existing_repo, validation_prompt, base_model,
-                resolution, num_training_steps, learning_rate,
-                gradient_accumulation, seed, fp16, use_8bit_adam,
-                checkpointing_steps, validation_epochs, upload_to_hub,
-                use_private_repo, delete_existing_repo, upload_to,
-                remove_gpu_after_training, input_token
-            ],
-            outputs=output_message)
+        run_button.click(fn=trainer.run,
+                         inputs=[
+                             training_video,
+                             training_prompt,
+                             output_model_name,
+                             delete_existing_repo,
+                             validation_prompt,
+                             base_model,
+                             resolution,
+                             num_training_steps,
+                             learning_rate,
+                             gradient_accumulation,
+                             seed,
+                             fp16,
+                             use_8bit_adam,
+                             checkpointing_steps,
+                             validation_epochs,
+                             upload_to_hub,
+                             use_private_repo,
+                             delete_existing_repo,
+                             upload_to,
+                             remove_gpu_after_training,
+                             input_token,
+                         ],
+                         outputs=output_message)
     return demo
 
 
