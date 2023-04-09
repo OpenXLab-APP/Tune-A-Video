@@ -21,6 +21,7 @@ class ModelUploader(Uploader):
         private: bool,
         delete_existing_repo: bool,
         input_hf_token: str | None = None,
+        return_html_link: bool = True,
     ) -> str:
         if not folder_path:
             raise ValueError
@@ -40,7 +41,8 @@ class ModelUploader(Uploader):
                            organization=organization,
                            private=private,
                            delete_existing_repo=delete_existing_repo,
-                           input_hf_token=input_hf_token)
+                           input_hf_token=input_hf_token,
+                           return_html_link=return_html_link)
 
 
 def load_local_model_list() -> dict:

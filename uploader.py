@@ -14,7 +14,8 @@ class Uploader:
                repo_type: str = 'model',
                private: bool = True,
                delete_existing_repo: bool = False,
-               input_hf_token: str | None = None) -> str:
+               input_hf_token: str | None = None,
+               return_html_link: bool = True) -> str:
 
         api = HfApi(token=self.hf_token or input_hf_token)
 
@@ -38,7 +39,9 @@ class Uploader:
                               path_in_repo='.',
                               repo_type=repo_type)
             url = f'https://huggingface.co/{repo_id}'
-            message = f'Your model was successfully uploaded to <a href="{url}" target="_blank">{url}</a>.'
+            if return_html_link:
+                url = f'<a href="{url}" target="_blank">{url}</a>'
+            message = f'Your model was successfully uploaded to {url}.'
         except Exception as e:
             message = str(e)
         return message

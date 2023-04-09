@@ -152,7 +152,8 @@ class Trainer:
                 upload_to=upload_to,
                 private=use_private_repo,
                 delete_existing_repo=delete_existing_repo,
-                input_hf_token=input_hf_token)
+                input_hf_token=input_hf_token,
+                return_html_link=False)
             with open(self.log_file, 'a') as f:
                 f.write(upload_message)
 
