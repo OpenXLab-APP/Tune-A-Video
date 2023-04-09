@@ -60,7 +60,7 @@ class Trainer:
         use_private_repo: bool,
         delete_existing_repo: bool,
         upload_to: str,
-        remove_gpu_after_training: bool,
+        pause_space_after_training: bool,
         hf_token: str,
     ) -> None:
         if not torch.cuda.is_available():
@@ -140,9 +140,7 @@ class Trainer:
             with open(self.log_file, 'a') as f:
                 f.write(upload_message)
 
-        if remove_gpu_after_training:
-            space_id = os.getenv('SPACE_ID')
-            if space_id:
+        if pause_space_after_training:
+            if space_id := os.getenv('SPACE_ID'):
                 api = HfApi(token=os.getenv('HF_TOKEN') or hf_token)
-                api.request_space_hardware(repo_id=space_id,
-                                           hardware='cpu-basic')
+                api.pause_space(repo_id=space_id)

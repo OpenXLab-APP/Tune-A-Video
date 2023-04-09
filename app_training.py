@@ -105,8 +105,8 @@ def create_training_demo(trainer: Trainer,
                         choices=[_.value for _ in UploadTarget],
                         value=UploadTarget.MODEL_LIBRARY.value)
 
-        remove_gpu_after_training = gr.Checkbox(
-            label='Remove GPU after training',
+        pause_space_after_training = gr.Checkbox(
+            label='Pause this Space after training',
             value=False,
             interactive=bool(os.getenv('SPACE_ID')),
             visible=False)
@@ -143,7 +143,7 @@ def create_training_demo(trainer: Trainer,
                              use_private_repo,
                              delete_existing_repo,
                              upload_to,
-                             remove_gpu_after_training,
+                             pause_space_after_training,
                              hf_token,
                          ])
     return demo
