@@ -103,4 +103,4 @@ if __name__ == '__main__':
 
     hf_token = os.getenv('HF_TOKEN')
     demo = create_upload_demo(hf_token)
-    demo.queue(max_size=1).launch(share=False)
+    demo.queue(api_open=False, max_size=1).launch()

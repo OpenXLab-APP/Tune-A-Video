@@ -79,4 +79,4 @@ with gr.Blocks(css='style.css') as demo:
     if not HF_TOKEN:
         show_warning(HF_TOKEN_NOT_SPECIFIED_WARNING)
 
-demo.queue(max_size=1).launch(share=False)
+demo.queue(api_open=False, max_size=1).launch()

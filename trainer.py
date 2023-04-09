@@ -21,7 +21,7 @@ sys.path.append('Tune-A-Video')
 
 URL_TO_JOIN_MODEL_LIBRARY_ORG = 'https://huggingface.co/organizations/Tune-A-Video-library/share/YjTcaNJmKyeHFpMBioHhzBcTzCYddVErEk'
 ORIGINAL_SPACE_ID = 'Tune-A-Video-library/Tune-A-Video-Training-UI'
-SPACE_ID = os.getenv('SPACE_ID', ORIGINAL_SPACE_ID)
+SPACE_ID = os.getenv('SPACE_ID')
 
 
 class Trainer:

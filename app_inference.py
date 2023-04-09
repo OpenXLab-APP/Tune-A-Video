@@ -167,4 +167,4 @@ if __name__ == '__main__':
     hf_token = os.getenv('HF_TOKEN')
     pipe = InferencePipeline(hf_token)
     demo = create_inference_demo(pipe, hf_token)
-    demo.queue(max_size=10).launch(share=False)
+    demo.queue(api_open=False, max_size=10).launch()

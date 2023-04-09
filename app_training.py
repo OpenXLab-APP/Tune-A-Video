@@ -6,7 +6,7 @@ import os
 
 import gradio as gr
 
-from constants import MODEL_LIBRARY_ORG_NAME, SAMPLE_MODEL_REPO, UploadTarget
+from constants import UploadTarget
 from inference import InferencePipeline
 from trainer import Trainer
 
@@ -132,4 +132,4 @@ if __name__ == '__main__':
     hf_token = os.getenv('HF_TOKEN')
     trainer = Trainer(hf_token)
     demo = create_training_demo(trainer)
-    demo.queue(max_size=1).launch(share=False)
+    demo.queue(api_open=False, max_size=1).launch()
