@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import sys
 
-import gradio as gr
 import slugify
 import torch
 from huggingface_hub import HfApi
@@ -64,13 +63,13 @@ class Trainer:
         hf_token: str,
     ) -> None:
         if not torch.cuda.is_available():
-            raise gr.Error('CUDA is not available.')
+            raise RuntimeError('CUDA is not available.')
         if training_video is None:
-            raise gr.Error('You need to upload a video.')
+            raise ValueError('You need to upload a video.')
         if not training_prompt:
-            raise gr.Error('The training prompt is missing.')
+            raise ValueError('The training prompt is missing.')
         if not validation_prompt:
-            raise gr.Error('The validation prompt is missing.')
+            raise ValueError('The validation prompt is missing.')
 
         resolution = int(resolution_s)
 
