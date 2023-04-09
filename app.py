@@ -14,10 +14,10 @@ from app_upload import create_upload_demo
 from inference import InferencePipeline
 from trainer import Trainer
 
-TITLE = '# [Tune-A-Video](https://tuneavideo.github.io/) UI'
+TITLE = '# [Tune-A-Video](https://tuneavideo.github.io/)'
 
 ORIGINAL_SPACE_ID = 'Tune-A-Video-library/Tune-A-Video-Training-UI'
-SPACE_ID = os.getenv('SPACE_ID', ORIGINAL_SPACE_ID)
+SPACE_ID = os.getenv('SPACE_ID')
 GPU_DATA = getoutput('nvidia-smi')
 SHARED_UI_WARNING = f'''## Attention - Training doesn't work in this shared UI. You can duplicate and use it with a paid private T4 GPU.
 
@@ -39,10 +39,8 @@ You can use "T4 small/medium" to run this demo.
 '''
 
 HF_TOKEN_NOT_SPECIFIED_WARNING = f'''The environment variable `HF_TOKEN` is not specified. Feel free to specify your Hugging Face token with write permission if you don't want to manually provide it for every run.
-<center>
-You can check and create your Hugging Face tokens <a href="https://huggingface.co/settings/tokens" target="_blank">here</a>.
-You can specify environment variables in the "Repository secrets" section of the {SETTINGS} tab.
-</center>
+
+You can check and create your Hugging Face tokens <a href="https://huggingface.co/settings/tokens" target="_blank">here</a>. You can specify environment variables in the "Repository secrets" section of the {SETTINGS} tab.
 '''
 
 HF_TOKEN = os.getenv('HF_TOKEN')
@@ -63,7 +61,7 @@ with gr.Blocks(css='style.css') as demo:
         show_warning(SHARED_UI_WARNING)
     elif not torch.cuda.is_available():
         show_warning(CUDA_NOT_AVAILABLE_WARNING)
-    elif (not 'T4' in GPU_DATA):
+    elif 'T4' not in GPU_DATA:
         show_warning(INVALID_GPU_WARNING)
 
     gr.Markdown(TITLE)
