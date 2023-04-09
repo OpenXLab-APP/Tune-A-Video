@@ -41,7 +41,7 @@ def create_upload_demo(disable_run_button: bool = False) -> gr.Blocks:
                                visible=os.getenv('HF_TOKEN') is None)
         upload_button = gr.Button('Upload', interactive=not disable_run_button)
         gr.Markdown(f'''
-            - You can upload your trained model to your personal profile (i.e. https://huggingface.co/{{your_username}}/{{model_name}}) or to the public [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (i.e. https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}/{{model_name}}).
+            - You can upload your trained model to your personal profile (i.e. `https://huggingface.co/{{your_username}}/{{model_name}}`) or to the public [Tune-A-Video Library](https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}) (i.e. `https://huggingface.co/{MODEL_LIBRARY_ORG_NAME}/{{model_name}}`).
             ''')
         with gr.Box():
             gr.Markdown('Output message')
