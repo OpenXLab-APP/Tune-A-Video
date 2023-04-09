@@ -1,5 +1,5 @@
-accelerate==0.15.0
-bitsandbytes==0.35.4
+accelerate==0.18.0
+bitsandbytes==0.37.2
 decord==0.6.0
 diffusers[torch]==0.11.1
 einops==0.6.0
