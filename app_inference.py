@@ -106,13 +106,13 @@ def create_inference_demo(pipe: InferencePipeline,
                                  maximum=100000,
                                  step=1,
                                  value=0)
-                with gr.Accordion('Other Parameters', open=False):
+                with gr.Accordion('Advanced options', open=False):
                     num_steps = gr.Slider(label='Number of Steps',
                                           minimum=0,
                                           maximum=100,
                                           step=1,
                                           value=50)
-                    guidance_scale = gr.Slider(label='CFG Scale',
+                    guidance_scale = gr.Slider(label='Guidance scale',
                                                minimum=0,
                                                maximum=50,
                                                step=0.1,
