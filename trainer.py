@@ -32,6 +32,9 @@ class Trainer:
         self.checkpoint_dir = pathlib.Path('checkpoints')
         self.checkpoint_dir.mkdir(exist_ok=True)
 
+        self.log_file = pathlib.Path('log.txt')
+        self.log_file.touch(exist_ok=True)
+
     def download_base_model(self, base_model_id: str) -> str:
         model_dir = self.checkpoint_dir / base_model_id
         if not model_dir.exists():
@@ -72,7 +75,7 @@ class Trainer:
         upload_to: str,
         remove_gpu_after_training: bool,
         input_token: str,
-    ) -> str:
+    ) -> None:
         if SPACE_ID == ORIGINAL_SPACE_ID:
             raise gr.Error(
                 'This Space does not work on this Shared UI. Duplicate the Space and attribute a GPU'
@@ -134,15 +137,19 @@ class Trainer:
             OmegaConf.save(config, f)
 
         command = f'accelerate launch Tune-A-Video/train_tuneavideo.py --config {config_path}'
-        subprocess.run(shlex.split(command))
+        with open(self.log_file, 'w') as f:
+            subprocess.run(shlex.split(command),
+                           stdout=f,
+                           stderr=subprocess.STDOUT,
+                           text=True)
         save_model_card(save_dir=output_dir,
                         base_model=base_model,
                         training_prompt=training_prompt,
                         test_prompt=validation_prompt,
                         test_image_dir='samples')
 
-        message = 'Training completed!'
-        print(message)
+        with open(self.log_file, 'a') as f:
+            f.write('Training completed!\n')
 
         if upload_to_hub:
             upload_message = self.model_uploader.upload_model(
@@ -152,8 +159,8 @@ class Trainer:
                 private=use_private_repo,
                 delete_existing_repo=delete_existing_repo,
                 input_token=input_token)
-            print(upload_message)
-            message = message + '\n' + upload_message
+            with open(self.log_file, 'a') as f:
+                f.write(upload_message)
 
         if remove_gpu_after_training:
             space_id = os.getenv('SPACE_ID')
@@ -162,5 +169,3 @@ class Trainer:
                     token=self.hf_token if self.hf_token else input_token)
                 api.request_space_hardware(repo_id=space_id,
                                            hardware='cpu-basic')
-
-        return message

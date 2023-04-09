@@ -44,6 +44,8 @@ RUN pyenv install ${PYTHON_VERSION} && \
 RUN pip install --no-cache-dir -U torch==1.13.1 torchvision==0.14.1
 COPY --chown=1000 requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -U -r /tmp/requirements.txt
+COPY --chown=1000 requirements-monitor.txt /tmp/requirements-monitor.txt
+RUN pip install --no-cache-dir -U -r /tmp/requirements-monitor.txt
 
 COPY --chown=1000 . ${HOME}/app
 RUN cd Tune-A-Video && patch -p1 < ../patch
