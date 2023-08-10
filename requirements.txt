@@ -18,3 +18,5 @@ transformers==4.26.0
 triton==2.0.0
 xformers==0.0.16
 nvitop
+plotly
+psutil
